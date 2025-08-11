@@ -37,6 +37,34 @@ html {
         <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
         <link rel="icon" type="image/png" href="/favicon.png" sizes="16x16" />
         <link rel="apple-touch-icon" href="/favicon.png" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Suppress common cross-origin errors
+              const originalError = console.error;
+              const originalWarn = console.warn;
+              
+              console.error = function(...args) {
+                const message = args[0]?.toString() || '';
+                if (message.includes('Blocked a frame with origin') || 
+                    message.includes('Protocols, domains, and ports must match') ||
+                    message.includes('from accessing a frame with origin')) {
+                  return;
+                }
+                originalError.apply(console, args);
+              };
+              
+              console.warn = function(...args) {
+                const message = args[0]?.toString() || '';
+                if (message.includes('AdSense head tag doesn\\'t support data-nscript attribute') ||
+                    message.includes('recorder.js')) {
+                  return;
+                }
+                originalWarn.apply(console, args);
+              };
+            `
+          }}
+        />
       </head>
       <body>
         <ConsoleErrorSuppressor />
