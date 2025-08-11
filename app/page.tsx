@@ -247,32 +247,46 @@ const Home: FC = () => {
           </div>
         </section>
         
-        { /* Contribution Section */}
+        {/* Why Choose Acehive Section */}
         <section className="py-20 md:py-28 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-3xl md:text-5xl font-extrabold mb-6">
-            Every Contribution Counts ❤️
-          </h2>
-          <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8">
-            <span className="bg-green-600 text-white px-1 rounded selection:bg-green-400 selection:text-white">
-              100% of the funds
-            </span> we receive go directly to charitable causes. 
-            We believe in complete transparency — you can see where every 
-            rupee goes. By supporting us, you're not just helping our mission, 
-            you're making a real difference in someone's life.
-          </p>
-          <p className="text-base md:text-lg text-gray-500 mb-10 italic">
-            "Small acts, when multiplied by millions of people, can transform the world."
-          </p>
-          <Link
-            href="/charity-transparency"
-            className="inline-block px-4 py-2 text-md font-semibold rounded-md shadow-md 
-                      bg-gray-900 text-white hover:bg-gray-800"
-          >
-            See Where Your Help Goes →
-          </Link>
-        </div>
-      </section>
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <h2 className="text-3xl md:text-5xl font-extrabold mb-6">
+              Why Choose Acehive? 🎯
+            </h2>
+            <p className="text-lg md:text-xl text-gray-600 leading-relaxed mb-8">
+              All our <span className="bg-blue-600 text-white px-1 rounded selection:bg-blue-400 selection:text-white">
+                CT Papers and Sem Papers
+              </span> are carefully curated from previous year question papers, 
+              ensuring you get the most relevant and up-to-date exam preparation materials. 
+              Our comprehensive collection helps you understand exam patterns, 
+              practice with real questions, and boost your confidence for better results.
+            </p>
+            <p className="text-base md:text-lg text-gray-500 mb-10 italic">
+              "Success in exams comes from understanding patterns, not just memorizing content."
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">📚 Authentic Papers</h3>
+                <p className="text-gray-600">Real previous year papers from actual exams</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">🎯 Exam Patterns</h3>
+                <p className="text-gray-600">Understand question types and difficulty levels</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold mb-3 text-gray-900">📈 Better Results</h3>
+                <p className="text-gray-600">Practice with confidence and improve scores</p>
+              </div>
+            </div>
+            <Link
+              href="/resource"
+              className="inline-block px-4 py-2 text-md font-semibold rounded-md shadow-md 
+                        bg-gray-900 text-white hover:bg-gray-800 mt-8"
+            >
+              Start Your Success Journey →
+            </Link>
+          </div>
+        </section>
       </main>
 
       {/* Footer */}
