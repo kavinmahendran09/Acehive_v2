@@ -15,6 +15,7 @@ export function GoogleAdSense() {
       src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
       crossOrigin="anonymous"
       strategy="afterInteractive"
+      id="google-adsense"
     />
   )
 }
