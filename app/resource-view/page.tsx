@@ -1,0 +1,399 @@
+"use client";
+
+import React, { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { fetchResources } from '@/lib/firebaseClient';
+
+const ResourceViewContent: React.FC = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const [resource, setResource] = useState<any>(null);
+  const [searchState, setSearchState] = useState<any>(null);
+  const [exactTagResources, setExactTagResources] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Get resource data from sessionStorage
+    const storedSearchState = sessionStorage.getItem('resourceSearchState');
+    if (storedSearchState) {
+      const parsedState = JSON.parse(storedSearchState);
+      setSearchState(parsedState);
+      
+      // Get resource ID from URL
+      const resourceId = searchParams.get('id');
+      if (resourceId && parsedState.results) {
+        const foundResource = parsedState.results.find((r: any) => r.id === resourceId);
+        if (foundResource) {
+          setResource(foundResource);
+        }
+      }
+    }
+  }, [searchParams]);
+
+  const handleBack = () => {
+    // Store the complete search state before going back
+    if (searchState) {
+      sessionStorage.setItem('resourceSearchState', JSON.stringify(searchState));
+    }
+    router.push('/resource');
+  };
+
+  const fetchSimilarResources = async () => {
+    if (!resource) return;
+
+    const allTags = resource.tags || [];
+
+    setIsLoading(true);
+
+    try {
+      const cacheKey = `similarResources-${resource.id}`;
+      const cachedData = localStorage.getItem(cacheKey);
+
+      if (cachedData) {
+        setExactTagResources(JSON.parse(cachedData));
+      } else {
+        const results = await fetchResources({ tags: allTags }, resource.resourceType);
+        const exactTagResults = results.filter((res: any) => {
+          const matchingTagsCount = countMatchingTags(res.tags, allTags);
+          return matchingTagsCount === allTags.length && res.id !== resource.id;
+        });
+
+        setExactTagResources(exactTagResults);
+        localStorage.setItem(cacheKey, JSON.stringify(exactTagResults));
+      }
+    } catch (error) {
+      console.error('Error fetching similar resources:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const countMatchingTags = (resourceTags: string[], searchTags: string[]): number => {
+    return resourceTags.filter((tag) => searchTags.includes(tag)).length;
+  };
+
+  const parseJsonSafely = (value: any, fallback: any = []) => {
+    if (Array.isArray(value)) {
+      if (value.length === 1 && typeof value[0] === 'string') {
+        try {
+          const parsed = JSON.parse(value[0]);
+          if (Array.isArray(parsed)) {
+            return parsed;
+          }
+        } catch (e) {
+          return value;
+        }
+      }
+      return value;
+    }
+    
+    if (typeof value === 'string') {
+      try {
+        let parsed = value;
+        
+        if (parsed.startsWith('"') && parsed.endsWith('"')) {
+          parsed = JSON.parse(parsed);
+        }
+        
+        if (typeof parsed === 'string' && parsed.startsWith('[') && parsed.endsWith(']')) {
+          parsed = JSON.parse(parsed);
+        }
+        
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+        
+        if (typeof parsed === 'string' && parsed.includes(',')) {
+          return parsed.split(',').map((item: string) => 
+            item.trim().replace(/^["']|["']$/g, '')
+          );
+        }
+        
+        if (typeof parsed === 'string') {
+          return [parsed.trim().replace(/^["']|["']$/g, '')];
+        }
+        
+        return fallback;
+      } catch (error) {
+        return fallback;
+      }
+    }
+    return value || fallback;
+  };
+
+  const Thumbnail: React.FC<{ resource: any }> = ({ resource }) => {
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    const fileUrl = resource.file_urls && Array.isArray(resource.file_urls) && resource.file_urls[0] ? resource.file_urls[0] : "/placeholder.svg";
+
+    if (isSafari) {
+      return (
+        <img
+          src={fileUrl}
+          className="w-full h-32 object-cover"
+          alt={resource.title || "Resource thumbnail"}
+        />
+      );
+    }
+
+    const isPdf = fileUrl && fileUrl !== "/placeholder.svg" && fileUrl.toLowerCase().endsWith('.pdf');
+    const numberInTitle = resource.title?.match(/\d+/)?.[0] || '';
+
+    if (isPdf) {
+      return (
+        <div className="flex justify-center items-center h-32 bg-gray-100">
+          <div className="flex flex-col items-center">
+            <svg
+              className="w-10 h-10 text-red-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="mt-1 text-sm font-medium">{numberInTitle}</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <img
+        src={fileUrl}
+        className="w-full h-32 object-cover"
+        alt={resource.title || "Resource thumbnail"}
+      />
+    );
+  };
+
+  useEffect(() => {
+    if (resource) {
+      fetchSimilarResources();
+    }
+  }, [resource]);
+
+  if (!resource) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <Navbar />
+        <div className="flex justify-center items-center py-12">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Resource not found</h2>
+            <Button onClick={handleBack} className="bg-gray-900 hover:bg-gray-800">
+              Back to Resources
+            </Button>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  const parsedTags = parseJsonSafely(resource.tags, []);
+  const parsedFileUrls = parseJsonSafely(resource.file_urls, []);
+
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <Navbar />
+
+      {/* Header */}
+      <div className="bg-gray-900 text-white py-20 text-center">
+        <h1 className="text-5xl font-bold mb-4">{resource.title}</h1>
+        <p className="text-xl text-gray-300 max-w-4xl mx-auto px-4">
+          Explore this resource and discover similar materials
+        </p>
+      </div>
+
+      {/* Tags Section */}
+      <div className="bg-white py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <h3 className="text-2xl font-bold mb-4">Tags</h3>
+          <div className="flex flex-wrap gap-2">
+            {parsedTags && parsedTags.length > 0 && parsedTags.map((tag: string, index: number) => {
+              const colors = [
+                "bg-blue-100 text-blue-800 border-blue-200",
+                "bg-green-100 text-green-800 border-green-200", 
+                "bg-yellow-100 text-yellow-800 border-yellow-200"
+              ];
+              return (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className={`text-sm ${colors[index % 3]}`}
+                >
+                  {tag}
+                </Badge>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Content Section */}
+      <div className="bg-white py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <h3 className="text-2xl font-bold mb-6">Content</h3>
+          <div className="bg-gray-50 rounded-lg p-6 mb-6">
+            <h4 className="text-xl font-semibold mb-4">
+              Introduction: <span className="font-normal text-lg">{resource.description}</span>
+            </h4>
+
+            {resource.bullet_points && resource.bullet_points.length > 0 && (
+              <ul className="list-disc list-inside space-y-2 mb-6">
+                {resource.bullet_points.map((point: string, index: number) => (
+                  <li key={index} className="font-semibold">{point}</li>
+                ))}
+              </ul>
+            )}
+
+            <h4 className="text-xl font-semibold mb-4">Resource:</h4>
+            <div className="space-y-4">
+              {parsedFileUrls.map((url: string, index: number) => (
+                <div key={index} className="w-full">
+                  {url.toLowerCase().endsWith('.pdf') ? (
+                    <div className="h-[700px] overflow-y-auto w-full border rounded-lg">
+                      <iframe
+                        src={url}
+                        width="100%"
+                        height="100%"
+                        title={`PDF ${index + 1}`}
+                        className="rounded-lg"
+                      />
+                    </div>
+                  ) : (
+                    <img
+                      src={url}
+                      alt={`Image ${index + 1}`}
+                      className="w-full h-auto rounded-lg max-w-full mx-auto block"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Back Button */}
+      <div className="bg-white py-6">
+        <div className="max-w-7xl mx-auto px-4">
+          <Button onClick={handleBack} className="bg-gray-900 hover:bg-gray-800 text-lg px-6 py-3">
+            Back
+          </Button>
+        </div>
+      </div>
+
+      {/* Similar Resources */}
+      <div className="bg-white py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <h1 className="text-3xl font-bold mb-6">Similar Resources</h1>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin"></div>
+              <span className="ml-3 text-gray-600">Loading...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {exactTagResources.slice(0, 12).map((similarResource: any, index: number) => {
+                const parsedSimilarTags = parseJsonSafely(similarResource.tags, []);
+                const parsedSimilarFileUrls = parseJsonSafely(similarResource.file_urls, []);
+                
+                const processedResource = {
+                  ...similarResource,
+                  tags: parsedSimilarTags,
+                  file_urls: parsedSimilarFileUrls
+                };
+
+                                 return (
+                   <Card key={index} className="h-full flex flex-col overflow-hidden">
+                     <Thumbnail resource={processedResource} />
+                     <CardHeader className="pb-2 flex-shrink-0">
+                       <CardTitle className="text-base line-clamp-2 min-h-[2.5rem]">{processedResource.title}</CardTitle>
+                     </CardHeader>
+                     <CardContent className="pt-0 flex flex-col flex-1">
+                       <p className="text-gray-600 text-sm mb-3 line-clamp-2 flex-1 min-h-[2.5rem]">
+                         {processedResource.description?.slice(0, 60)}...
+                       </p>
+
+                       {/* Tags */}
+                       <div className="mb-3 min-h-[1.5rem] flex items-start flex-shrink-0">
+                         {processedResource.tags && Array.isArray(processedResource.tags) && processedResource.tags.length > 0 ? (
+                           <div className="flex flex-wrap gap-1">
+                             {processedResource.tags.slice(0, 3).map((tag: string, tagIndex: number) => {
+                               const colors = [
+                                 "bg-blue-100 text-blue-800 border-blue-200",
+                                 "bg-green-100 text-green-800 border-green-200", 
+                                 "bg-yellow-100 text-yellow-800 border-yellow-200"
+                               ];
+                               const displayTag = tag.length > 12 ? `${tag.slice(0, 9)}...` : tag;
+                               return (
+                                 <Badge
+                                   key={tagIndex}
+                                   variant="outline"
+                                   className={`text-xs ${colors[tagIndex % 3]}`}
+                                   title={tag.length > 12 ? tag : undefined}
+                                 >
+                                   {displayTag}
+                                 </Badge>
+                               );
+                             })}
+                             {processedResource.tags.length > 3 && (
+                               <Badge variant="outline" className="text-xs">
+                                 +{processedResource.tags.length - 3}
+                               </Badge>
+                             )}
+                           </div>
+                         ) : (
+                           <div></div>
+                         )}
+                       </div>
+
+                       <Button 
+                         onClick={() => {
+                           const newSearchState = { ...searchState, results: exactTagResources };
+                           sessionStorage.setItem('resourceSearchState', JSON.stringify(newSearchState));
+                           router.push(`/resource-view?id=${encodeURIComponent(processedResource.id || '')}`);
+                         }}
+                         className="w-full bg-gray-900 hover:bg-gray-800 flex-shrink-0"
+                       >
+                         View Resource
+                       </Button>
+                     </CardContent>
+                   </Card>
+                 );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <Footer />
+    </div>
+  );
+};
+
+const ResourceView: React.FC = () => {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ResourceViewContent />
+    </Suspense>
+  );
+};
+
+export default ResourceView;
