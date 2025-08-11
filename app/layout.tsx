@@ -7,6 +7,7 @@ import { PostHogProvider } from '@/components/PostHogProvider'
 import { GoogleAnalytics } from '@/components/GoogleAnalytics'
 import { GoogleAdSense } from '@/components/GoogleAdSense'
 import { Analytics } from '@vercel/analytics/next'
+import { ConsoleErrorSuppressor } from '@/components/ConsoleErrorSuppressor'
 
 export const metadata: Metadata = {
   title: 'Acehive',
@@ -38,6 +39,7 @@ html {
         <link rel="apple-touch-icon" href="/favicon.png" />
       </head>
       <body>
+        <ConsoleErrorSuppressor />
         <GoogleAnalytics />
         <GoogleAdSense />
         <PostHogProvider>

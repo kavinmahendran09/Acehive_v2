@@ -16,6 +16,9 @@ export function GoogleAdSense() {
       crossOrigin="anonymous"
       strategy="afterInteractive"
       id="google-adsense"
+      onError={(e) => {
+        console.warn('Google AdSense script failed to load:', e)
+      }}
     />
   )
 }
