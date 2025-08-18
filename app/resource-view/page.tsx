@@ -48,6 +48,20 @@ const ResourceViewContent: React.FC = () => {
     if (!resource) return;
 
     const allTags = resource.tags || [];
+    
+    console.log('Fetching similar resources for:', {
+      resourceId: resource.id,
+      resourceTitle: resource.title,
+      tags: allTags,
+      resourceType: resource.resourceType
+    });
+    
+    // If no tags, don't fetch similar resources
+    if (allTags.length === 0) {
+      console.log('No tags found, skipping similar resources');
+      setExactTagResources([]);
+      return;
+    }
 
     setIsLoading(true);
 
@@ -56,19 +70,39 @@ const ResourceViewContent: React.FC = () => {
       const cachedData = localStorage.getItem(cacheKey);
 
       if (cachedData) {
+        console.log('Using cached similar resources');
         setExactTagResources(JSON.parse(cachedData));
       } else {
+        console.log('Fetching similar resources from database...');
         const results = await fetchResources({ tags: allTags }, resource.resourceType);
-        const exactTagResults = results.filter((res: any) => {
-          const matchingTagsCount = countMatchingTags(res.tags, allTags);
-          return matchingTagsCount === allTags.length && res.id !== resource.id;
-        });
+        console.log('Raw results from fetchResources:', results.length, 'items');
+        
+        // Filter and sort by relevance (number of matching tags)
+        const similarResults = results
+          .filter((res: any) => {
+            // Exclude the current resource
+            if (res.id === resource.id) return false;
+            
+            // Must have at least one matching tag
+            const matchingTagsCount = countMatchingTags(res.tags, allTags);
+            return matchingTagsCount > 0;
+          })
+          .map((res: any) => {
+            const matchingTagsCount = countMatchingTags(res.tags, allTags);
+            return {
+              ...res,
+              relevanceScore: matchingTagsCount / Math.max(allTags.length, res.tags?.length || 1)
+            };
+          })
+          .sort((a: any, b: any) => b.relevanceScore - a.relevanceScore);
 
-        setExactTagResources(exactTagResults);
-        localStorage.setItem(cacheKey, JSON.stringify(exactTagResults));
+        console.log('Filtered similar results:', similarResults.length, 'items');
+        setExactTagResources(similarResults);
+        localStorage.setItem(cacheKey, JSON.stringify(similarResults));
       }
     } catch (error) {
       console.error('Error fetching similar resources:', error);
+      setExactTagResources([]);
     } finally {
       setIsLoading(false);
     }

@@ -42,8 +42,21 @@ export const fetchResources = async (
       constraints.push(where('elective', '==', filters.elective));
     }
     
+    // Add tags filter if provided
+    if (filters.tags && Array.isArray(filters.tags) && filters.tags.length > 0) {
+      // Use array-contains-any to find resources that contain any of the specified tags
+      console.log('Adding tags filter:', filters.tags);
+      constraints.push(where('tags', 'array-contains-any', filters.tags));
+    }
+    
     // Add limit to reduce reads
     constraints.push(limit(maxResults));
+    
+    console.log('Built query with constraints:', {
+      resourceType,
+      filters,
+      constraintCount: constraints.length
+    });
     
     return query(resourcesRef, ...constraints);
   };
