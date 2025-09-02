@@ -1,8 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { Wrench } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect } from "react";
 import {
   Select,
   SelectTrigger,
@@ -10,366 +8,248 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 interface FiltersProps {
   year: string | null;
-  degree: string | null;
-  specialisation: string | null;
-  subject: string | null;
-  elective: string | null;
+  resourceType: string | null;
+  searchQuery: string;
   setYear: React.Dispatch<React.SetStateAction<string | null>>;
-  setDegree: React.Dispatch<React.SetStateAction<string | null>>;
-  setSpecialisation: React.Dispatch<React.SetStateAction<string | null>>;
-  setSubject: React.Dispatch<React.SetStateAction<string | null>>;
-  setElective: React.Dispatch<React.SetStateAction<string | null>>;
-  handleSearch: () => void;
-  warning: string | null;
+  setResourceType: React.Dispatch<React.SetStateAction<string | null>>;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+  onSearch: (subject: string) => void;
   isAuthenticated: boolean;
-  signIn?: () => Promise<void>;
 }
 
 const Filters: React.FC<FiltersProps> = ({
   year,
-  degree,
-  specialisation,
-  subject,
-  elective,
+  resourceType,
+  searchQuery,
   setYear,
-  setDegree,
-  setSpecialisation,
-  setSubject,
-  setElective,
-  handleSearch,
-  warning,
+  setResourceType,
+  setSearchQuery,
+  onSearch,
   isAuthenticated,
-  signIn,
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubjectSelected, setIsSubjectSelected] = useState(true);
+  const yearOptions = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
+  const [resourceTypeOptions, setResourceTypeOptions] = useState<string[]>([]);
+  const [searchSuggestions, setSearchSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [subjects, setSubjects] = useState<string[]>([]);
+  const [suggestionClicked, setSuggestionClicked] = useState(false);
 
-  const specialisationOptions =
-    degree === "Computer Science"
-      ? [
-          "Core",
-          "Data Science",
-          "Information Technology",
-          "Artificial Intelligence",
-          "Cloud Computing",
-          "Cyber Security",
-          "Computer Networking",
-          "Gaming Technology",
-          "Artificial Intelligence and Machine Learning",
-          "Business Systems",
-          "Big Data Analytics",
-          "Block Chain Technology",
-          "Software Engineering",
-          "Internet of Things",
-        ]
-      : degree === "Biotechnology"
-      ? [
-          "Biotechnology Core",
-          "Biotechnology (Computational Biology)",
-          "Biotechnology W/S in Food Technology",
-          "Biotechnology W/S in Genetic Engineering",
-          "Biotechnology W/S in Regenerative Medicine",
-        ]
-      : degree === "Electrical"
-      ? ["Electrical & Electronics Engineering", "Electric Vehicle Technology"]
-      : degree === "Civil"
-      ? ["Civil Engineering Core", "Civil Engineering with Computer Applications"]
-      : degree === "ECE"
-      ? [
-          "Electronics & Communication Engineering",
-          "Cyber Physical Systems",
-          "Data Sciences",
-          "Electronics and Computer Engineering",
-          "VLSI Design and Technology",
-        ]
-      : degree === "Automobile"
-      ? ["Core", "Automotive Electronics", "Vehicle Testing"]
-      : degree === "Mechanical"
-      ? [
-          "Core",
-          "Automation and Robotics",
-          "AIML",
-          "Mechatronics Engineering Core",
-          "Autonomous Driving Technology",
-          "Immersive Technologies",
-          "Industrial IoT",
-          "Robotics",
-        ]
-      : [];
+  // Update resource type options based on year selection
+  useEffect(() => {
+    if (year === "1st Year") {
+      setResourceTypeOptions(["Sem Paper", "CT Paper", "Study Material"]);
+    } else if (year === "2nd Year" || year === "3rd Year" || year === "4th Year") {
+      setResourceTypeOptions(["Sem Paper"]);
+      // Reset resource type if it's not Sem Paper
+      if (resourceType && resourceType !== "Sem Paper") {
+        setResourceType(null);
+      }
+    } else {
+      setResourceTypeOptions([]);
+    }
+  }, [year, resourceType]);
 
-  const subjectOptions =
-    year === "1st Year"
-      ? degree === "Biotechnology"
-        ? [
-            "Communicative English",
-            "Calculus and Linear Algebra",
-            "Electrical and Electronics Engineering",
-            "Semiconductor Physics and Computational Methods",
-            "Programming for Problem Solving",
-            "Advanced Calculus and Complex Analysis",
-            "Chemistry",
-            "Introduction to Computational Biology",
-            "Object Oriented Design and Programming",
-            "Philosophy of Engineering",
-            "Cell Biology",
-            "Biochemistry",
-          ]
-        : [
-            "Communicative English",
-            "Calculus and Linear Algebra",
-            "Electrical and Electronics Engineering",
-            "Semiconductor Physics and Computational Methods",
-            "Programming for Problem Solving",
-            "Advanced Calculus and Complex Analysis",
-            "Chemistry",
-            "Introduction to Computational Biology",
-            "Object Oriented Design and Programming",
-            "Philosophy of Engineering",
-          ]
-      : specialisation === "Artificial Intelligence and Machine Learning"
-      ? ["Computer Networks", "Discrete Mathematics", "Machine Learning", "Formal Language and Automata"]
-      : [];
+  // Fetch subjects from Firebase when year and resource type are selected
+  useEffect(() => {
+    const fetchSubjects = async () => {
+      if (year && resourceType) {
+        console.log('Fetching subjects for:', { year, resourceType });
+        try {
+          const response = await fetch(`/api/subjects?year=${encodeURIComponent(year)}&type=${encodeURIComponent(resourceType)}`);
+          if (response.ok) {
+            const data = await response.json();
+            console.log('Received subjects from API:', data);
+            setSubjects(data.subjects || []);
+          }
+        } catch (error) {
+          console.error('Error fetching subjects:', error);
+          setSubjects([]);
+        }
+      } else {
+        console.log('Clearing subjects - missing year or resource type:', { year, resourceType });
+        setSubjects([]);
+      }
+    };
 
-  const electiveOptions = [
-    "French",
-    "Spanish",
-    "German",
-    "Japanese",
-    "Korean",
-    "Chinese",
-  ];
+    fetchSubjects();
+  }, [year, resourceType]);
 
-  const handleYearChange = (y: string) => {
-    setYear(y);
-    setSpecialisation(null);
-    setSubject(null);
-    setElective(null);
-  };
-
-  const handleDegreeChange = (d: string) => {
-    setDegree(d);
-    setSpecialisation(null);
-    setSubject(null);
-    setElective(null);
-  };
-
-  const handleSearchClick = async () => {
-    if (!isAuthenticated && signIn) {
-      await signIn();
+  // Filter subjects based on search query
+  useEffect(() => {
+    if (suggestionClicked) {
+      // If a suggestion was clicked, don't show any suggestions
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
       return;
     }
     
-    setIsLoading(true);
-    await handleSearch();
-    setIsLoading(false);
+    if (searchQuery.trim() && subjects.length > 0) {
+      console.log('Filtering subjects for search:', {
+        searchQuery,
+        selectedYear: year,
+        selectedResourceType: resourceType,
+        availableSubjects: subjects,
+        subjectsCount: subjects.length
+      });
+      
+      // Additional safeguard: ensure we only show subjects for the current year selection
+      const currentYearSubjects = subjects.filter(subject => {
+        // Since subjects are already fetched year-specifically, this should always be true
+        // But adding this as a double-check
+        return true; // subjects array already contains only year-specific subjects
+      });
+      
+      const filtered = currentYearSubjects.filter(subject =>
+        subject.toLowerCase().startsWith(searchQuery.toLowerCase())
+      );
+      
+      console.log('Filtered suggestions:', {
+        filtered,
+        filteredCount: filtered.length,
+        yearValidation: `All suggestions are for ${year}`
+      });
+      
+      setSearchSuggestions(filtered);
+      setShowSuggestions(filtered.length > 0);
+    } else {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [searchQuery, subjects, suggestionClicked, year, resourceType]);
+
+  const handleYearChange = (value: string) => {
+    setYear(value);
+    // Reset other fields when year changes
+    setResourceType(null);
+    setSearchQuery("");
+    setSearchSuggestions([]);
+    setShowSuggestions(false);
   };
 
-  // Determine if the search button should be enabled
-  const isSearchEnabled = () => {
-    if (!isAuthenticated) {
-      return false;
+  const handleResourceTypeChange = (value: string) => {
+    setResourceType(value);
+    // Reset search when resource type changes
+    setSearchQuery("");
+    setSearchSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // If user starts typing again, reset the suggestion clicked flag
+    if (value.trim() && suggestionClicked) {
+      setSuggestionClicked(false);
     }
     
-    if (year === "1st Year") {
-      // For 1st Year, only subject or elective is required
-      return subject || elective;
-    } else {
-      // For 2nd Year and 3rd Year, specialisation is also required
-      return (subject || elective) && specialisation;
+    // Clear suggestions if input is empty
+    if (!value.trim()) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
     }
   };
 
-    return (
-    <div className="w-full p-4 bg-white border border-gray-200 rounded-lg">
-      <h3 className="text-xl font-semibold mb-4 text-gray-900">Search Options</h3>
+  const handleSuggestionClick = (subject: string) => {
+    setSearchQuery(subject);
+    setShowSuggestions(false);
+    setSearchSuggestions([]);
+    setSuggestionClicked(true);
+    // Trigger search with the selected subject
+    onSearch(subject);
+  };
+
+  return (
+    <div className="w-full">
+      <h3 className="text-lg font-medium mb-4 text-gray-900">Search Resources</h3>
       
-      {/* Year Section */}
-      <div className="mb-4">
-        <h5 className="text-lg font-medium mb-3 text-gray-900">Year</h5>
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
-          {["1st Year", "2nd Year", "3rd Year"].map((y) => (
-            <button
-              key={y}
-              type="button"
-              className={`w-full px-4 py-3 text-left border-b border-gray-200 last:border-b-0 flex items-center justify-between transition-colors ${
-                year === y 
-                  ? "bg-gray-900 text-white" 
-                  : "bg-white text-gray-900 hover:bg-gray-50"
-              } ${y !== "1st Year" ? "opacity-60 cursor-not-allowed" : "cursor-pointer hover:cursor-pointer"}`}
-              onClick={() => y === "1st Year" && handleYearChange(y)}
-              disabled={y !== "1st Year"}
-            >
-              <span className="text-base">{y}</span>
-              {y !== "1st Year" && (
-                <span className="flex items-center text-gray-500" title="Work in Progress">
-                  <Wrench className="w-3 h-3 mr-2" />
-                  <small>(Work in Progress)</small>
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Degree Section */}
-      <div className="mb-4">
-        <h5 className="text-lg font-medium mb-3 text-gray-900">Degree</h5>
-        <div className="border border-gray-200 rounded-lg overflow-hidden">
-          {["Computer Science", "Biotechnology", "Electrical", "ECE", "Mechanical", "Civil", "Automobile"].map((d) => (
-            <button
-              key={d}
-              type="button"
-              className={`w-full px-4 py-3 text-left border-b border-gray-200 last:border-b-0 transition-colors cursor-pointer hover:cursor-pointer ${
-                degree === d 
-                  ? "bg-gray-900 text-white" 
-                  : "bg-white text-gray-900 hover:bg-gray-50"
-              }`}
-              onClick={() => handleDegreeChange(d)}
-            >
-              <span className="text-base">{d}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Specialisation Section */}
-      {(year === "2nd Year" || year === "3rd Year") && (
-        <div className="mb-4">
-          <h5 className="text-lg font-medium mb-3 text-gray-900">Specialisation</h5>
+      {/* Responsive Filters Layout */}
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-3 lg:items-end">
+        {/* Year Dropdown */}
+        <div className="w-full lg:w-auto lg:flex-[0_0_auto]">
+          <label className="block text-xs font-medium text-gray-600 mb-1 uppercase tracking-wide">
+            Year
+          </label>
           <Select
-            value={specialisation || ""}
-            onValueChange={(value) => setSpecialisation(value)}
-            disabled={!year || !degree}
+            value={year || ""}
+            onValueChange={handleYearChange}
+            disabled={!isAuthenticated}
           >
-            <SelectTrigger className="w-full h-12 text-base">
-              <SelectValue placeholder="Select Specialisation" />
+            <SelectTrigger className="w-full lg:w-40 h-9 text-sm border-gray-300 focus:border-gray-400 focus:ring-gray-400">
+              <SelectValue placeholder="Select Year" />
             </SelectTrigger>
             <SelectContent>
-              {specialisationOptions.map((spec) => (
-                <SelectItem key={spec} value={spec}>
-                  {spec}
+              {yearOptions.map((y) => (
+                <SelectItem key={y} value={y} className="text-sm">
+                  {y}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
-      )}
 
-      {/* Subject Type Toggle */}
-      <div className="mb-4">
-        <h5 className="text-lg font-medium mb-3 text-gray-900">Subject</h5>
-        <div className="flex gap-2">
-          <Button
-            variant={isSubjectSelected ? "default" : "outline"}
-            size="default"
-            className={`flex-1 h-10 text-base cursor-pointer hover:cursor-pointer ${
-              isSubjectSelected ? "bg-gray-900 hover:bg-gray-800" : ""
-            }`}
-            onClick={() => setIsSubjectSelected(true)}
+        {/* Resource Type Dropdown */}
+        <div className="w-full lg:w-auto lg:flex-[0_0_auto]">
+          <label className="block text-xs font-medium text-gray-600 mb-1 uppercase tracking-wide">
+            Type
+          </label>
+          <Select
+            value={resourceType || ""}
+            onValueChange={handleResourceTypeChange}
+            disabled={!year || !isAuthenticated}
           >
-            Subject
-          </Button>
-          <Button
-            variant={!isSubjectSelected ? "default" : "outline"}
-            size="default"
-            className={`flex-1 h-10 text-base cursor-pointer hover:cursor-pointer ${
-              !isSubjectSelected ? "bg-gray-900 hover:bg-gray-800" : ""
-            }`}
-            onClick={() => setIsSubjectSelected(false)}
-          >
-            Language / Elective
-          </Button>
+            <SelectTrigger className="w-full lg:w-44 h-9 text-sm border-gray-300 focus:border-gray-400 focus:ring-gray-400">
+              <SelectValue placeholder="Select Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {resourceTypeOptions.map((type) => (
+                <SelectItem key={type} value={type} className="text-sm">
+                  {type}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Search Input */}
+        <div className="w-full lg:w-auto lg:flex-[0_0_auto] relative">
+          <label className="block text-xs font-medium text-gray-600 mb-1 uppercase tracking-wide">
+            Search
+          </label>
+          <Input
+            type="text"
+            placeholder="Search subjects..."
+            value={searchQuery}
+            onChange={handleSearchInputChange}
+            className="w-full lg:w-80 h-9 text-sm border-gray-300 focus:border-gray-400 focus:ring-gray-400 placeholder:text-gray-400"
+            disabled={!year || !resourceType || !isAuthenticated}
+          />
+          
+          {/* Search Suggestions Dropdown */}
+          {showSuggestions && searchSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-10 max-h-60 overflow-y-auto">
+              {/* Debug info */}
+              <div className="px-3 py-2 text-xs text-gray-500 bg-gray-50 border-b">
+                Showing suggestions for {year} - {resourceType} ({searchSuggestions.length} results)
+              </div>
+              {searchSuggestions.map((suggestion, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Subject Selection */}
-      {isSubjectSelected && (
-        <div className="mb-4">
-          <Select
-            value={subject || ""}
-            onValueChange={(value) => {
-              setSubject(value);
-              setElective(null);
-            }}
-            disabled={!year || !degree || (!specialisation && (year === "2nd Year" || year === "3rd Year"))}
-          >
-            <SelectTrigger className="w-full h-12 text-base">
-              <SelectValue placeholder="Select Subject" />
-            </SelectTrigger>
-            <SelectContent>
-              {subjectOptions.map((subj) => (
-                <SelectItem key={subj} value={subj}>
-                  {subj}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Elective Selection */}
-      {!isSubjectSelected && (
-        <div className="mb-4">
-          <Select
-            value={elective || ""}
-            onValueChange={(value) => {
-              setElective(value);
-              setSubject(null);
-            }}
-            disabled={!year || !degree || (!specialisation && (year === "2nd Year" || year === "3rd Year"))}
-          >
-            <SelectTrigger className="w-full h-12 text-base">
-              <SelectValue placeholder="Select Language/Elective" />
-            </SelectTrigger>
-            <SelectContent>
-              {electiveOptions.map((elec) => (
-                <SelectItem key={elec} value={elec}>
-                  {elec}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      {/* Warning Message */}
-      {year !== null && year !== "1st Year" && (
-        <div className="mb-3">
-          <small className="text-red-600">
-            You can select either a Subject or an Elective, but not both.
-          </small>
-        </div>
-      )}
-
-      {/* Search Button */}
-      <Button
-        className="w-full h-12 mt-3 text-base font-medium bg-gray-900 hover:bg-gray-800 cursor-pointer hover:cursor-pointer"
-        onClick={handleSearchClick}
-        disabled={!isSearchEnabled() || isLoading}
-      >
-        {isLoading ? (
-          <div className="flex items-center">
-            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"></div>
-            Loading...
-          </div>
-        ) : !isAuthenticated ? (
-          "Login to Search"
-        ) : (
-          "Search"
-        )}
-      </Button>
-
-      {/* Error Alert */}
-      {warning && (
-        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-md" role="alert">
-          <div className="text-red-700 text-sm">
-            {warning}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

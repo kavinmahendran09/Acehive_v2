@@ -21,18 +21,36 @@ const ResourceViewContent: React.FC = () => {
   useEffect(() => {
     // Get resource data from sessionStorage
     const storedSearchState = sessionStorage.getItem('resourceSearchState');
+    console.log('Stored search state:', storedSearchState);
+    
     if (storedSearchState) {
       const parsedState = JSON.parse(storedSearchState);
       setSearchState(parsedState);
+      console.log('Parsed search state:', parsedState);
       
       // Get resource ID from URL
       const resourceId = searchParams.get('id');
+      console.log('Resource ID from URL:', resourceId);
+      
       if (resourceId && parsedState.results) {
-        const foundResource = parsedState.results.find((r: any) => r.id === resourceId);
+        console.log('Looking for resource with ID:', resourceId);
+        console.log('Available results:', parsedState.results);
+        console.log('Result IDs:', parsedState.results.map((r: any) => r.id));
+        
+        const foundResource = parsedState.results.find((r: any) => 
+          String(r.id) === String(resourceId) || r.id === resourceId
+        );
+        console.log('Found resource:', foundResource);
+        
         if (foundResource) {
           setResource(foundResource);
+        } else {
+          console.error('Resource not found with ID:', resourceId);
+          console.error('Available IDs:', parsedState.results.map((r: any) => r.id));
         }
       }
+    } else {
+      console.log('No stored search state found');
     }
   }, [searchParams]);
 
@@ -165,6 +183,33 @@ const ResourceViewContent: React.FC = () => {
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const fileUrl = resource.file_urls && Array.isArray(resource.file_urls) && resource.file_urls[0] ? resource.file_urls[0] : "/placeholder.svg";
 
+    // Check if this is 2nd year or higher based on search state
+    const isSecondYearOrHigher = searchState?.year === "2nd Year" || searchState?.year === "3rd Year" || searchState?.year === "4th Year";
+    
+    // For 2nd year+ resources, always show PDF icon instead of trying to load images
+    if (isSecondYearOrHigher) {
+      const numberInTitle = resource.title?.match(/\d+/)?.[0] || "";
+      return (
+        <div className="flex justify-center items-center h-32 bg-gray-100">
+          <div className="flex flex-col items-center">
+            <svg
+              className="w-10 h-10 text-red-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                clipRule="evenodd"
+              />
+            </svg>
+            <span className="mt-1 text-sm font-medium">{numberInTitle}</span>
+          </div>
+        </div>
+      );
+    }
+
     if (isSafari) {
       return (
         <img
@@ -176,9 +221,10 @@ const ResourceViewContent: React.FC = () => {
     }
 
     const isPdf = fileUrl && fileUrl !== "/placeholder.svg" && fileUrl.toLowerCase().endsWith('.pdf');
+    const isGoogleDoc = fileUrl && fileUrl.includes('docs.google.com/gview');
     const numberInTitle = resource.title?.match(/\d+/)?.[0] || '';
 
-    if (isPdf) {
+    if (isPdf || isGoogleDoc) {
       return (
         <div className="flex justify-center items-center h-32 bg-gray-100">
           <div className="flex flex-col items-center">
@@ -234,6 +280,13 @@ const ResourceViewContent: React.FC = () => {
 
   const parsedTags = parseJsonSafely(resource.tags, []);
   const parsedFileUrls = parseJsonSafely(resource.file_urls, []);
+  
+  console.log('Resource data in resource-view:', {
+    resource,
+    parsedTags,
+    parsedFileUrls,
+    fileUrlsRaw: resource.file_urls
+  });
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -276,6 +329,7 @@ const ResourceViewContent: React.FC = () => {
       <div className="bg-white py-8">
         <div className="max-w-7xl mx-auto px-4">
           <h3 className="text-2xl font-bold mb-6">Content</h3>
+          
           <div className="bg-gray-50 rounded-lg p-6 mb-6">
             <h4 className="text-xl font-semibold mb-4">
               Introduction: <span className="font-normal text-lg">{resource.description}</span>
@@ -302,6 +356,40 @@ const ResourceViewContent: React.FC = () => {
                         title={`PDF ${index + 1}`}
                         className="rounded-lg"
                       />
+                    </div>
+                  ) : url.includes('docs.google.com/gview') ? (
+                    <div className="w-full">
+                      <div className="bg-gray-50 border rounded-lg p-6 text-center">
+                        <div className="mb-4">
+                          <svg
+                            className="w-16 h-16 text-red-500 mx-auto"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                              clipRule="evenodd"
+                            />
+                          </svg>
+                        </div>
+                        <h4 className="text-lg font-semibold mb-2">Google Docs Document</h4>
+                        <p className="text-gray-600 mb-4">
+                          This document is hosted on Google Docs and cannot be embedded directly due to security restrictions.
+                        </p>
+                        <a
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                        >
+                          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                          </svg>
+                          Open Document in New Tab
+                        </a>
+                      </div>
                     </div>
                   ) : (
                     <img

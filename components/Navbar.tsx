@@ -23,28 +23,7 @@ const Navbar: React.FC = () => {
   const isAboutActive = pathname === "/about";
   const isResourcesActive = pathname === "/resource" || pathname.startsWith("/resource");
 
-  const handleNavigate = (resourceType: string) => {
-    let mappedResourceType;
-    switch (resourceType) {
-      case "CT Papers":
-        mappedResourceType = "CT Paper";
-        break;
-      case "Sem Papers":
-        mappedResourceType = "Sem Paper";
-        break;
-      case "Study Materials":
-        mappedResourceType = "Study Material";
-        break;
-      default:
-        mappedResourceType = "CT Paper";
-    }
 
-    // Set flag to indicate user is coming from navbar (should reset search state)
-    sessionStorage.setItem('comingFromHomeOrDashboard', 'true');
-    
-    // Clear search state and go to resource page with new type
-    router.push(`/resource?type=${encodeURIComponent(mappedResourceType)}`);
-  };
 
   return (
     <nav className="bg-white shadow-md border-b sticky top-0 z-50">
@@ -64,63 +43,35 @@ const Navbar: React.FC = () => {
 
             {/* Desktop Navigation - moved to left side */}
             <div className="hidden md:flex items-center space-x-6">
-              {/* Resources Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={`flex items-center space-x-1 cursor-pointer ${
-                      isResourcesActive 
-                        ? "text-gray-900 bg-gray-100" 
-                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-100"
-                    }`}
-                  >
-                    <span>Resources</span>
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-48">
-                  <DropdownMenuItem asChild>
-                    <button
-                      className="w-full text-left px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100 rounded"
-                      onClick={() => handleNavigate("CT Papers")}
-                    >
-                      CT Papers
-                    </button>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <button
-                      className="w-full text-left px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100 rounded"
-                      onClick={() => handleNavigate("Sem Papers")}
-                    >
-                      Sem Papers
-                    </button>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <button
-                      className="w-full text-left px-2 py-1.5 text-sm cursor-pointer hover:bg-gray-100 rounded"
-                      onClick={() => handleNavigate("Study Materials")}
-                    >
-                      Study Materials
-                    </button>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-                          {/* About Link */}
-            <Button 
-              variant="ghost" 
-              asChild
-              className={isAboutActive ? "text-gray-900 bg-gray-100" : ""}
-            >
-              <Link
-                href="/about"
-                className="text-gray-700 hover:text-gray-900"
-                onClick={() => sessionStorage.setItem('comingFromHomeOrDashboard', 'true')}
+              {/* Resources Link */}
+              <Button 
+                variant="ghost" 
+                asChild
+                className={isResourcesActive ? "text-gray-900 bg-gray-100" : ""}
               >
-                About
-              </Link>
-            </Button>
+                <Link
+                  href="/resource"
+                  className="text-gray-700 hover:text-gray-900"
+                  onClick={() => sessionStorage.setItem('comingFromHomeOrDashboard', 'true')}
+                >
+                  Resources
+                </Link>
+              </Button>
+
+              {/* About Link */}
+              <Button 
+                variant="ghost" 
+                asChild
+                className={isAboutActive ? "text-gray-900 bg-gray-100" : ""}
+              >
+                <Link
+                  href="/about"
+                  className="text-gray-700 hover:text-gray-900"
+                  onClick={() => sessionStorage.setItem('comingFromHomeOrDashboard', 'true')}
+                >
+                  About
+                </Link>
+              </Button>
             </div>
           </div>
 
@@ -207,40 +158,18 @@ const Navbar: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white">
             <div className="px-2 pt-2 pb-3 space-y-1">
-              {/* Resources Section */}
+              {/* Resources Link */}
               <div className="px-3 py-2">
-                <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
+                <Link
+                  href="/resource"
+                  className="block px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    sessionStorage.setItem('comingFromHomeOrDashboard', 'true');
+                  }}
+                >
                   Resources
-                </h3>
-                <div className="mt-2 space-y-1">
-                  <button
-                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md"
-                    onClick={() => {
-                      handleNavigate("CT Papers");
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    CT Papers
-                  </button>
-                  <button
-                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md"
-                    onClick={() => {
-                      handleNavigate("Sem Papers");
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    Sem Papers
-                  </button>
-                  <button
-                    className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-50 rounded-md"
-                    onClick={() => {
-                      handleNavigate("Study Materials");
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    Study Materials
-                  </button>
-                </div>
+                </Link>
               </div>
 
               {/* About Link */}
