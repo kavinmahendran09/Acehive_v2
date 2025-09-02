@@ -63,67 +63,30 @@ const ResourceViewContent: React.FC = () => {
   };
 
   const fetchSimilarResources = async () => {
-    if (!resource) return;
+    if (!resource || !searchState) return;
 
-    const allTags = resource.tags || [];
-    
-    console.log('Fetching similar resources for:', {
+    console.log('Using original search results as similar resources:', {
       resourceId: resource.id,
       resourceTitle: resource.title,
-      tags: allTags,
-      resourceType: resource.resourceType
+      originalResultsCount: searchState.results?.length || 0
     });
     
-    // If no tags, don't fetch similar resources
-    if (allTags.length === 0) {
-      console.log('No tags found, skipping similar resources');
-      setExactTagResources([]);
-      return;
-    }
+    // Use the original search results as similar resources, excluding the current resource
+    const similarResults = (searchState.results || [])
+      .filter((res: any) => {
+        // Exclude the current resource
+        return res.id !== resource.id;
+      })
+      .map((res: any) => {
+        // All results from the same search have the same relevance
+        return {
+          ...res,
+          relevanceScore: 1.0
+        };
+      });
 
-    setIsLoading(true);
-
-    try {
-      const cacheKey = `similarResources-${resource.id}`;
-      const cachedData = localStorage.getItem(cacheKey);
-
-      if (cachedData) {
-        console.log('Using cached similar resources');
-        setExactTagResources(JSON.parse(cachedData));
-      } else {
-        console.log('Fetching similar resources from database...');
-        const results = await fetchResources({ tags: allTags }, resource.resourceType);
-        console.log('Raw results from fetchResources:', results.length, 'items');
-        
-        // Filter and sort by relevance (number of matching tags)
-        const similarResults = results
-          .filter((res: any) => {
-            // Exclude the current resource
-            if (res.id === resource.id) return false;
-            
-            // Must have at least one matching tag
-            const matchingTagsCount = countMatchingTags(res.tags, allTags);
-            return matchingTagsCount > 0;
-          })
-          .map((res: any) => {
-            const matchingTagsCount = countMatchingTags(res.tags, allTags);
-            return {
-              ...res,
-              relevanceScore: matchingTagsCount / Math.max(allTags.length, res.tags?.length || 1)
-            };
-          })
-          .sort((a: any, b: any) => b.relevanceScore - a.relevanceScore);
-
-        console.log('Filtered similar results:', similarResults.length, 'items');
-        setExactTagResources(similarResults);
-        localStorage.setItem(cacheKey, JSON.stringify(similarResults));
-      }
-    } catch (error) {
-      console.error('Error fetching similar resources:', error);
-      setExactTagResources([]);
-    } finally {
-      setIsLoading(false);
-    }
+    console.log('Similar results from original search:', similarResults.length, 'items');
+    setExactTagResources(similarResults);
   };
 
   const countMatchingTags = (resourceTags: string[], searchTags: string[]): number => {
@@ -256,10 +219,10 @@ const ResourceViewContent: React.FC = () => {
   };
 
   useEffect(() => {
-    if (resource) {
+    if (resource && searchState) {
       fetchSimilarResources();
     }
-  }, [resource]);
+  }, [resource, searchState]);
 
   if (!resource) {
     return (
@@ -418,10 +381,9 @@ const ResourceViewContent: React.FC = () => {
       <div className="bg-white py-8">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-3xl font-bold mb-6">Similar Resources</h1>
-          {isLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="w-8 h-8 border-4 border-gray-300 border-t-gray-900 rounded-full animate-spin"></div>
-              <span className="ml-3 text-gray-600">Loading...</span>
+          {exactTagResources.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No similar resources found</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -481,7 +443,14 @@ const ResourceViewContent: React.FC = () => {
 
                        <Button 
                          onClick={() => {
-                           const newSearchState = { ...searchState, results: exactTagResources };
+                           // Preserve the original search state but update the results to include the similar resources
+                           // This ensures the user can navigate back to their original search context
+                           const newSearchState = { 
+                             ...searchState, 
+                             results: exactTagResources,
+                             // Keep the original search context for navigation back
+                             originalResults: searchState?.results || []
+                           };
                            sessionStorage.setItem('resourceSearchState', JSON.stringify(newSearchState));
                            router.push(`/resource-view?id=${encodeURIComponent(processedResource.id || '')}`);
                          }}

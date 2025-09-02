@@ -38,7 +38,10 @@ const ResourceContent: React.FC = () => {
           setSearchQuery(parsedState.subject);
           setCurrentSubject(parsedState.subject);
         }
-        if (parsedState.results) {
+        // Use originalResults if available (when coming back from similar resources), otherwise use results
+        if (parsedState.originalResults && parsedState.originalResults.length > 0) {
+          setSearchResults(parsedState.originalResults);
+        } else if (parsedState.results) {
           setSearchResults(parsedState.results);
         }
         
