@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import Filters from "@/components/Filters";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -231,11 +232,22 @@ const ResourceContent: React.FC = () => {
       {/* Main Content */}
       <div className="bg-white">
         <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-12 pt-8 sm:pt-12 pb-6">
-          {/* Info Line */}
-          <div className="mb-4">
-            <p className="text-sm text-gray-600 italic">
-              * For 2nd Year onwards only sem papers are available and will be updated soon
-            </p>
+          {/* Highlighted Notice */}
+          <div className="mb-6 max-w-2xl">
+            <Alert className="bg-amber-50 border-amber-200 text-amber-900 py-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="size-4 text-amber-600"
+              >
+                <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.198 0l7.355 12.748c1.155 2-.289 4.5-2.599 4.5H4.645c-2.31 0-3.754-2.5-2.6-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.9.9 0 100-1.8.9.9 0 000 1.8z" clipRule="evenodd" />
+              </svg>
+              <AlertTitle className="text-amber-900">Notice</AlertTitle>
+              <AlertDescription className="leading-tight">
+                For 2nd Year onwards only sem papers are available and the rest will be updated soon
+              </AlertDescription>
+            </Alert>
           </div>
 
           {/* Filters Section - Horizontal Layout */}
