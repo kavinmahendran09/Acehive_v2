@@ -11,13 +11,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   User, 
   Mail, 
-  Calendar, 
-  Crown, 
-  CreditCard, 
   Clock,
-  Shield,
   ArrowLeft,
-  RefreshCw
+  RefreshCw,
+  Bookmark
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -180,72 +177,8 @@ const DashboardContent: React.FC = () => {
             </Card>
           </div>
 
-          {/* Coming Soon Features */}
+          {/* Main Right Column */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Subscription Features */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Crown className="w-5 h-5" />
-                  <span>Premium Features</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Crown className="w-8 h-8 text-blue-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Coming Soon!</h3>
-                  <p className="text-gray-600 mb-4">
-                    We're working on exciting premium features including:
-                  </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span>Unlimited downloads</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span>Priority support</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span>Advanced search filters</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span>Study progress tracking</span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Payment & Billing */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <CreditCard className="w-5 h-5" />
-                  <span>Payment & Billing</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CreditCard className="w-8 h-8 text-green-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Coming Soon!</h3>
-                  <p className="text-gray-600 mb-4">
-                    Secure payment processing and subscription management will be available soon.
-                  </p>
-                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-                    <Shield className="w-4 h-4" />
-                    <span>Secure payment processing</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Study Analytics */}
             <Card>
               <CardHeader>
@@ -262,6 +195,27 @@ const DashboardContent: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Coming Soon!</h3>
                   <p className="text-gray-600">
                     Track your study progress, download history, and learning analytics.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Saved Resources */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Bookmark className="w-5 h-5" />
+                  <span>Saved Resources</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Bookmark className="w-8 h-8 text-amber-600" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Coming Soon!</h3>
+                  <p className="text-gray-600">
+                    Quickly access resources you’ve saved for later. Sync across devices.
                   </p>
                 </div>
               </CardContent>
