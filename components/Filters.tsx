@@ -184,7 +184,12 @@ const Filters: React.FC<FiltersProps> = ({
             </SelectTrigger>
             <SelectContent>
               {yearOptions.map((y) => (
-                <SelectItem key={y} value={y} className="text-sm">
+                <SelectItem 
+                  key={y} 
+                  value={y} 
+                  className="text-sm"
+                  disabled={y === "1st Year"}
+                >
                   {y}
                 </SelectItem>
               ))}

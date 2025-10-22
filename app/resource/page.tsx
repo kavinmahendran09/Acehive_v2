@@ -250,6 +250,30 @@ const ResourceContent: React.FC = () => {
             </Alert>
           </div>
 
+          {/* 1st Year Error Notice */}
+          <div className="mb-6 max-w-2xl">
+            <Alert className="bg-red-50 border-red-200 text-red-900 py-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="size-4 text-red-600"
+              >
+                <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clipRule="evenodd" />
+              </svg>
+              <AlertTitle className="text-red-900">1st Year Resources Temporarily Unavailable</AlertTitle>
+              <AlertDescription className="leading-tight">
+                We're experiencing technical issues with 1st Year resources. Our team is working to fix this issue. 
+                <br />
+                <strong>Estimated fix time:</strong> 2 days
+                <br />
+                <strong>Please check back on:</strong> October 25, 2024
+                <br />
+                <span className="text-red-700">Sorry for the inconvenience and thank you for your understanding.</span>
+              </AlertDescription>
+            </Alert>
+          </div>
+
           {/* Filters Section - Horizontal Layout */}
           <div className="mb-8">
             <Filters
