@@ -210,42 +210,28 @@ const ResourceContent: React.FC = () => {
       {/* Main Content */}
       <div className="bg-white">
         <div className="max-w-none mx-auto px-4 sm:px-6 lg:px-12 pt-8 sm:pt-12 pb-6">
-          {/* Highlighted Notice */}
-          <div className="mb-6 max-w-2xl">
-            <Alert className="bg-amber-50 border-amber-200 text-amber-900 py-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="size-4 text-amber-600"
-              >
-                <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.198 0l7.355 12.748c1.155 2-.289 4.5-2.599 4.5H4.645c-2.31 0-3.754-2.5-2.6-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.9.9 0 100-1.8.9.9 0 000 1.8z" clipRule="evenodd" />
-              </svg>
-              <AlertTitle className="text-amber-900">Notice</AlertTitle>
-              <AlertDescription className="leading-tight">
-                For 2nd Year onwards only sem papers are available and the rest will be updated soon
-              </AlertDescription>
-            </Alert>
-          </div>
-
-          {/* 1st Year Fix Complete Notice */}
-          <div className="mb-6 max-w-2xl">
-            <Alert className="bg-green-50 border-green-200 text-green-900 py-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="size-4 text-green-600"
-              >
-                <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
-              </svg>
-              <AlertTitle className="text-green-900">1st Year Resources Fixed!</AlertTitle>
-              <AlertDescription className="leading-tight">
-                The technical issues with 1st Year resources have been resolved. You can now access 1st Year resources.
+          {/* Ad-Free Notice - Aesthetic */}
+          <div className="mb-8 max-w-3xl">
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200 shadow-sm">
+              <div className="flex items-center mb-3">
+                <div className="bg-green-100 rounded-full p-2 mr-3">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-5 h-5 text-green-600"
+                  >
+                    <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-green-800">Ad-Free Experience</h3>
+              </div>
+              <p className="text-gray-700 leading-relaxed">
+                At <span className="font-semibold">Acehive</span>, we don't bombard you with ads and it will <span className="font-semibold text-red-700">never be the case</span>. 
                 <br />
-                <span className="text-green-700">Thank you for your patience!</span>
-              </AlertDescription>
-            </Alert>
+                <span className="text-gray-600">Focus on your studies without distractions.</span>
+              </p>
+            </div>
           </div>
 
           {/* Filters Section - Horizontal Layout */}
