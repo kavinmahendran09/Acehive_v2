@@ -183,38 +183,27 @@ const ResourceViewContent: React.FC = () => {
       );
     }
 
-    const isPdf = fileUrl && fileUrl !== "/placeholder.svg" && fileUrl.toLowerCase().endsWith('.pdf');
-    const isGoogleDoc = fileUrl && fileUrl.includes('docs.google.com/gview');
+    // All URLs are PDFs, so always show PDF icon
     const numberInTitle = resource.title?.match(/\d+/)?.[0] || '';
 
-    if (isPdf || isGoogleDoc) {
-      return (
-        <div className="flex justify-center items-center h-32 bg-gray-100">
-          <div className="flex flex-col items-center">
-            <svg
-              className="w-10 h-10 text-red-500"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="mt-1 text-sm font-medium">{numberInTitle}</span>
-          </div>
-        </div>
-      );
-    }
-
     return (
-      <img
-        src={fileUrl}
-        className="w-full h-32 object-cover"
-        alt={resource.title || "Resource thumbnail"}
-      />
+      <div className="flex justify-center items-center h-32 bg-gray-100">
+        <div className="flex flex-col items-center">
+          <svg
+            className="w-10 h-10 text-red-500"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fillRule="evenodd"
+              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span className="mt-1 text-sm font-medium">{numberInTitle}</span>
+        </div>
+      </div>
     );
   };
 
@@ -310,17 +299,8 @@ const ResourceViewContent: React.FC = () => {
             <div className="space-y-4">
               {parsedFileUrls.map((url: string, index: number) => (
                 <div key={index} className="w-full">
-                  {url.toLowerCase().endsWith('.pdf') ? (
-                    <div className="h-[700px] overflow-y-auto w-full border rounded-lg">
-                      <iframe
-                        src={url}
-                        width="100%"
-                        height="100%"
-                        title={`PDF ${index + 1}`}
-                        className="rounded-lg"
-                      />
-                    </div>
-                  ) : url.includes('docs.google.com/gview') ? (
+                  {/* All URLs are PDFs, so always show PDF viewer */}
+                  {url.includes('docs.google.com/gview') ? (
                     <div className="w-full">
                       <div className="bg-gray-50 border rounded-lg p-6 text-center">
                         <div className="mb-4">
@@ -355,11 +335,15 @@ const ResourceViewContent: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <img
-                      src={url}
-                      alt={`Image ${index + 1}`}
-                      className="w-full h-auto rounded-lg max-w-full mx-auto block"
-                    />
+                    <div className="h-[700px] overflow-y-auto w-full border rounded-lg">
+                      <iframe
+                        src={url}
+                        width="100%"
+                        height="100%"
+                        title={`PDF ${index + 1}`}
+                        className="rounded-lg"
+                      />
+                    </div>
                   )}
                 </div>
               ))}

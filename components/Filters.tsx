@@ -42,6 +42,10 @@ const Filters: React.FC<FiltersProps> = ({
   useEffect(() => {
     if (year === "1st Year") {
       setResourceTypeOptions(["Sem Paper", "CT Paper", "Study Material"]);
+      // Reset resource type if it's Study Material (disabled for 1st Year)
+      if (resourceType && resourceType === "Study Material") {
+        setResourceType(null);
+      }
     } else if (year === "2nd Year" || year === "3rd Year" || year === "4th Year") {
       setResourceTypeOptions(["Sem Paper"]);
       // Reset resource type if it's not Sem Paper
@@ -188,7 +192,6 @@ const Filters: React.FC<FiltersProps> = ({
                   key={y} 
                   value={y} 
                   className="text-sm"
-                  disabled={y === "1st Year"}
                 >
                   {y}
                 </SelectItem>
@@ -212,7 +215,12 @@ const Filters: React.FC<FiltersProps> = ({
             </SelectTrigger>
             <SelectContent>
               {resourceTypeOptions.map((type) => (
-                <SelectItem key={type} value={type} className="text-sm">
+                <SelectItem 
+                  key={type} 
+                  value={type} 
+                  className="text-sm"
+                  disabled={year === "1st Year" && type === "Study Material"}
+                >
                   {type}
                 </SelectItem>
               ))}

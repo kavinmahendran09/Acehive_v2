@@ -140,7 +140,6 @@ const ResourceContent: React.FC = () => {
   };
 
   const Thumbnail: React.FC<{ resource: any }> = ({ resource }) => {
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
     const fileUrl = resource.file_urls && Array.isArray(resource.file_urls) && resource.file_urls[0] ? resource.file_urls[0] : "/placeholder.svg";
 
     // Check if this is 2nd year or higher
@@ -170,48 +169,27 @@ const ResourceContent: React.FC = () => {
       );
     }
 
-    if (isSafari) {
-      return (
-        <img
-          src={fileUrl}
-          className="w-full h-32 object-cover"
-          alt={resource.title || "Resource thumbnail"}
-        />
-      );
-    }
-
-    const isPdf = fileUrl && fileUrl !== "/placeholder.svg" && fileUrl.toLowerCase().endsWith(".pdf");
-    const isGoogleDoc = fileUrl && fileUrl.includes("docs.google.com/gview");
+    // All URLs are PDFs, so always show PDF icon
     const numberInTitle = resource.title?.match(/\d+/)?.[0] || "";
 
-    if (isPdf || isGoogleDoc) {
-      return (
-        <div className="flex justify-center items-center h-32 bg-gray-100">
-          <div className="flex flex-col items-center">
-            <svg
-              className="w-10 h-10 text-red-500"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="mt-1 text-sm font-medium">{numberInTitle}</span>
-          </div>
-        </div>
-      );
-    }
-
     return (
-      <img
-        src={fileUrl}
-        className="w-full h-32 object-cover"
-        alt={resource.title || "Resource thumbnail"}
-      />
+      <div className="flex justify-center items-center h-32 bg-gray-100">
+        <div className="flex flex-col items-center">
+          <svg
+            className="w-10 h-10 text-red-500"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              fillRule="evenodd"
+              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span className="mt-1 text-sm font-medium">{numberInTitle}</span>
+        </div>
+      </div>
     );
   };
 
@@ -250,26 +228,22 @@ const ResourceContent: React.FC = () => {
             </Alert>
           </div>
 
-          {/* 1st Year Error Notice */}
+          {/* 1st Year Fix Complete Notice */}
           <div className="mb-6 max-w-2xl">
-            <Alert className="bg-red-50 border-red-200 text-red-900 py-3">
+            <Alert className="bg-green-50 border-green-200 text-green-900 py-3">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                className="size-4 text-red-600"
+                className="size-4 text-green-600"
               >
-                <path fillRule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zm-1.72 6.97a.75.75 0 10-1.06 1.06L10.94 12l-1.72 1.72a.75.75 0 101.06 1.06L12 13.06l1.72 1.72a.75.75 0 101.06-1.06L13.06 12l1.72-1.72a.75.75 0 10-1.06-1.06L12 10.94l-1.72-1.72z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
               </svg>
-              <AlertTitle className="text-red-900">1st Year Resources Temporarily Unavailable</AlertTitle>
+              <AlertTitle className="text-green-900">1st Year Resources Fixed!</AlertTitle>
               <AlertDescription className="leading-tight">
-                We're experiencing technical issues with 1st Year resources. Our team is working to fix this issue. 
+                The technical issues with 1st Year resources have been resolved. You can now access 1st Year resources.
                 <br />
-                <strong>Estimated fix time:</strong> 2 days
-                <br />
-                <strong>Please check back on:</strong> October 25, 2024
-                <br />
-                <span className="text-red-700">Sorry for the inconvenience and thank you for your understanding.</span>
+                <span className="text-green-700">Thank you for your patience!</span>
               </AlertDescription>
             </Alert>
           </div>
